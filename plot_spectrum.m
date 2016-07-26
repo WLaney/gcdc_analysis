@@ -1,16 +1,17 @@
 function spectrum_plot( data, sampling_rate)
-%input data and sampling rate in Hz, returns data filtered with a high pass
-%brick wall filter
+% Plot the DFT spectrum of a block of data with a given sample rate.
+% Some effort has been made to find the 
 
-%preform and plot DFT
-ftz=fft(data); %preform foward DFT
-abs_fty=abs(ftz); %find absolute value
-spectrum_freq=fourier_frequencies(sampling_rate, length(data)); %find freq
-% remove negative frequencies
-neg = spectrum_freq < 0;
-abs_fty(neg) = [];
-spectrum_freq(neg) = [];
+%% Get DFT
+spectrum_freq=fourier_frequencies(sampling_rate, length(data));
+ftz=fft(data);
+abs_fty=abs(ftz);
+% Remove negative results
+zero_cross = find(spectrum_freq<0,1)
+spectrum_freq(zero_cross:end) = [];
+abs_fty(zero_cross:end,:) = [];
 
+%% Peak Extraction
 % % We're looking for peaks beyond the DC offset, so we ignore
 % % everything below 2Hz. We also want wide peaks.
 % peak_width = find(spectrum_freq >= 0.001, 1);
@@ -20,13 +21,15 @@ spectrum_freq(neg) = [];
 % disp(strcat(num2str(length(peaks)), ' peaks found.'));
 % table(spectrum_freq(inds), peaks)
 
+%% Plotting
+% Make a subplot for each thingamajigger
 figure(2);
 hold on
-plot(spectrum_freq,abs_fty) %dft
+plot(spectrum_freq,abs_fty)
 set(gca,'yscale','log')
 xlabel('Frequency(Hz)')
 ylabel('FFT amplitude')
-title('Logarithmic Frequency Response');
+title('Frequency Response');
 hold off
 
 end
