@@ -8,17 +8,29 @@ function [ cells, accel, times ] = import_dir( dirname, start_time )
 % to be supplied by the user, as the date/time stamps in the CSV files seem
 % to be inaccurate.
 %
-% accel is a 3xN matrix containing accelerometer data (as ints) and time
+% accel is a 3xN matrix containing accelerometer data (as int16s) and time
 % data (as seconds). cells is a cell containing a number of 1x2 cells, each
 % representing a single file and containing accelerometer and time data
 % formatted in the same manner.
+%
+% Due to integer overflow, it is reccomended to convert accel into a larger
+% data format when performing arithmetic on it, such as float or double.
+
+% Get filenames to import
 listing = dir(dirname);
 listing = listing(3:end); % remove . and ..
+names = {};
+for i=1:length(listing)
+    name = listing(i).name;
+    if strfind(name, 'DATA') == 1
+        names{length(names)+1} = name;
+    end
+end
 
 %% Collect data from individual files
-cells = cell(length(listing),1);
-parfor i=1:length(listing)
-    [accel, times] = import_file(strcat(dirname, '/', listing(i).name));
+cells = cell(length(names),1);
+parfor i=1:length(names)
+    [accel, times] = import_file(strcat(dirname, '/', names{i}));
     cells{i} = {accel, seconds(times)};
 end
 
